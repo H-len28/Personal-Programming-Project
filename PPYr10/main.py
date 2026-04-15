@@ -1,9 +1,10 @@
 import os
 from colorama import Fore, Style
 import time
-import sys
+import numpy as np
 
-rows = [[0, 0, 2048, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+
+rows = [[0, 0, 6, 6], [0, 2, 8, 1], [0, 0, 5, 0], [0, 3, 0, 0]]
 
 Board_size = 4
 
@@ -63,26 +64,33 @@ def MergeLeft(New_Board):
         New_Board[i] = MergeOneRowLeft(New_Board[i])
     return New_Board
 
+def reverseOrders(row):
+    ReversedBoard = []
+    for i in range (Board_size -1, -1, -1):
+        ReversedBoard.append(row[i])
+    return ReversedBoard
 
-def MergeOneRowRight(row):
-    pass
-
-def MergeRight():
-    pass
-
-def MergeOneRowUp():
-    pass
-
-def MergeUp():
-    pass
-
-def MergeOneRowDown():
-    pass
-
-def MergeDown():
-    pass
+def MergeRight(New_Board):
+    for i in range(Board_size):
+        New_Board[i] = reverseOrders(New_Board[i])
+        New_Board[i] = MergeOneRowLeft(New_Board[i])
+        New_Board[i] = reverseOrders(New_Board[i])
+    return New_Board
 
 
+def TransposeBoard(New_Board):
+    New_Board = np.array(rows).T
+    return New_Board
+
+def MergeDown(New_Board):
+    New_Board = TransposeBoard(New_Board)
+    New_Board = MergeLeft(New_Board)
+    New_Board = TransposeBoard(New_Board)
+    New_Board = TransposeBoard(New_Board)
+    print(New_Board)
+    return New_Board
+
+    
 
 
 def scoreboard():
@@ -138,5 +146,9 @@ def main_menu():
     elif choice == "Play":
         Game()
 
+MergeDown(rows)
 
-main_menu()
+# when milestone reached:
+# git stage*
+# git commit -m "blahblahlal"
+# git push
