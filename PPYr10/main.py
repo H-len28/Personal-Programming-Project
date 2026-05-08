@@ -79,27 +79,41 @@ def MergeRight(New_Board):
 
 
 def TransposeBoard(New_Board):
-    New_Board = np.array(rows).T
+    New_Board = np.array(New_Board).T
     return New_Board
 
 def MergeDown(New_Board):
+    
     New_Board = TransposeBoard(New_Board)
-    New_Board = MergeLeft(New_Board)
-    New_Board = TransposeBoard(New_Board)
+    
+    New_Board = MergeRight(New_Board)
+    
     New_Board = TransposeBoard(New_Board)
     print(New_Board)
+    
     return New_Board
 
-    
-
+def CalculateScore():
+    score = [[sum(row) for row in zip(*rows)]]
+    print(score)
+    for num in score:
+        num = int(num)
+    score = sum(score)
+    return score
 
 def scoreboard():
     Scoreboard = open("Leaderboard.txt", "w")
     Scoreboard.close()
     return Scoreboard
 
-def updateScore():
+def updateScore(Scoreboard):
     username = input("Enter name:")
+    names = []
+    scores = []
+    names.append(username)
+    #scores.append()
+    Scoreboard.write(username)
+
 
 
 def IsFileEmpty(Scoreboard):
@@ -114,8 +128,19 @@ def IsFileEmpty(Scoreboard):
     
     return os.path.getsize(Scoreboard) == 0
 
+def movement():
+    move = input("Which direction? ")
+    if move == "a":
+        MergeLeft(rows)
+        display_board
+    elif move =="d":
+        MergeRight(rows)
+        display_board
+
+
+    
 def Game():
-    print("Work in progress")
+    pass
 
 
 
@@ -146,7 +171,7 @@ def main_menu():
     elif choice == "Play":
         Game()
 
-MergeDown(rows)
+
 
 # when milestone reached:
 # git stage*
