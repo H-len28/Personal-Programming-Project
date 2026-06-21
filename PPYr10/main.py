@@ -1,10 +1,10 @@
-import os
 from colorama import Fore, Style
 import time
-import numpy as np
+import random
+import copy
 
 
-rows = [[0, 0, 6, 6], [0, 2, 8, 1], [0, 0, 5, 0], [0, 3, 0, 0]]
+rows = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
 
 Board_size = 4
 
@@ -22,13 +22,14 @@ Colour_end = Style.RESET_ALL
 
 
 def tutorial():
-    print("How to play: \nUse ",Yellow_start, "WASD", Colour_end ," to merge identical blocks")
-    time.sleep(0.7)
+    print(Cyan_start,"How to play:" , Colour_end, "\nUse ",Yellow_start, "WASD", Colour_end ," to merge identical blocks")
+    time.sleep(1)
     print("Identical blocks will add together to form a larger block (eg 2→2 = 4)")
-    time.sleep(0.7)
+    time.sleep(1)
     print("Every movement will spawn either a 2 or a 4 on a random empty space")
-    time.sleep(0.7)
+    time.sleep(1)
     print("Keep playing until you create", Yellow_start, "2048", Colour_end," or run out of space!")
+    print()
 
 def display_board():
     largestValue = rows[0][0]
@@ -114,71 +115,121 @@ def MergeUp(New_Board):
     New_Board = TransposeBoard(New_Board) 
     return New_Board
 
-def CalculateScore():
-    score = [[sum(row) for row in zip(*rows)]]
-    print(score)
-    for num in score:
-        num = int(num)
-    score = sum(score)
-    return score
-
-def scoreboard():
-    Scoreboard = open("Leaderboard.txt", "w")
-    Scoreboard.close()
-    return Scoreboard
-
-def updateScore(Scoreboard):
-    username = input("Enter name:")
-    names = []
-    scores = []
-    names.append(username)
-    #scores.append()
-    Scoreboard.write(username)
-
-
-
-def IsFileEmpty(Scoreboard):
-    if not os.path.exists(Scoreboard):
-        print("Sorry! No one has played yet!")
-        return False
-    
+def NewNum():
+    if random.randint(1,5) == 1:
+        return 4
     else:
-        with open(Scoreboard, 'r') as file:
-            leaderboard = file.read()
-            print(leaderboard)
-    
-    return os.path.getsize(Scoreboard) == 0
+        return 2
 
-def movement():
-    directions = ["a", "s", "w", "d"]
-    display_board()
-    move = input("Make your move: ")
-    move = move.lower()
-    while move not in directions:
-        print(Red_start, "That isn't a move!", Colour_end)
-        move = input("Try again: ")
-        move = move.lower()
-    
-    if move == "a":
-        MergeLeft(rows)
-        display_board
-    elif move == "s":
-        MergeDown(rows)
-        display_board
-    elif move == "w":
-        MergeUp(rows)
-        display_board()
-    elif move == "d":
-        MergeRight(rows)
-        display_board()
+def AddNew():
+    RowNum = random.randint(0, Board_size - 1)
+    ColumnNum = random.randint(0, Board_size - 1)
 
-
+    while not rows[RowNum][ColumnNum] == 0:
+        RowNum = random.randint(0, Board_size - 1)
+        ColumnNum = random.randint(0, Board_size - 1)
     
+    rows[RowNum][ColumnNum] = NewNum()
+
+def Win():
+    for row in rows:
+        if 2048 in row:
+            return True
+    return False
+
+def NoSpaceLeft():
+    BoardCopy1 = copy.deepcopy(rows)
+    BoardCopy2 = copy.deepcopy(rows)
+    MergeDown(BoardCopy1)
+
+    if BoardCopy1 == BoardCopy2:
+        MergeUp(BoardCopy1)
+        if BoardCopy1 == BoardCopy2:
+            MergeLeft(BoardCopy1)
+            if BoardCopy1 == BoardCopy2:
+                MergeRight(BoardCopy1)
+                if BoardCopy1 == BoardCopy2:
+                    return True
+                
+    return False
+
+rows = []
+
+for i in range(Board_size):
+    row = []
+    for x in range (Board_size):
+        row.append(0)
+    rows.append(row)
+
+Starting_Amount = 2
+while Starting_Amount > 0:
+    RowNum = random.randint(0, Board_size - 1)
+    ColumnNum = random.randint(0, Board_size - 1)
+    if rows[RowNum][ColumnNum] == 0:
+        rows[RowNum][ColumnNum] = NewNum()
+        Starting_Amount -= 1
+
+def CountScore():
+    score = sum(sum(num)for num in rows)
+    print("Your score is")
+    time.sleep(1)
+    print(Yellow_start, score, Colour_end)
+
 def Game():
-    pass
+    print(green_start,"Lets begin!", Colour_end)
+    time.sleep(1.5)
+    display_board()
+
+    GameOver = False
+
+    while not GameOver:
+        movement =  input("Your move: ")
     
+        movement = movement.lower()
 
+        ValidMove = True
 
+        BoardCopy = copy.deepcopy(rows)
+
+        if movement == "a":
+            MergeLeft(rows)
+        elif movement == "s":
+            MergeDown(rows)
+        elif movement == "w":
+            MergeUp(rows)
+        elif movement == "d":
+            MergeRight(rows)
+        else:
+            ValidMove = False
+        
+        if ValidMove == False:
+            print(Red_start,"Thats not a move. ",Colour_end)
+
+        else:
+            if rows == BoardCopy:
+                print(Red_start, "That doesn't change anything.", Colour_end)
+            else:
+                if Win():
+                    display_board()
+                    time.sleep(0.5)
+                    print(Yellow_start,"YOU GOT 2048!", Colour_end)
+                    time.sleep(0.5)
+                    print(green_start,"YOU WON!!",Colour_end)
+                    CountScore()
+                    GameOver = True
+                else: 
+                    AddNew()
+                    display_board()
+
+                    if NoSpaceLeft():
+                        print(Red_start,"Game Over!")
+                        time.sleep(1)
+                        print("You ran out of space!",Colour_end)
+                        time.sleep(1)
+                        print()
+                        CountScore()
+                        GameOver = True
+            
 
 def main_menu():
     print(Yellow_start,"Welcome to...")
@@ -195,22 +246,19 @@ def main_menu():
     time.sleep(0.5)
     print(Cyan_start,"[Tutorial]", Colour_end)
     time.sleep(0.5)
-    print(Purple_start,"[Score]",Colour_end)
-    time.sleep(0.5)
     choice = input("What would you like to do?\n")
     choice = choice.lower()
-    while choice != "play":
-        if choice == "tutorial":
-            tutorial()
-            choice = input("what would you like to do? ")
-        elif choice == "score":
-            pass
 
-    if choice == "play":
-        Game()
+    while choice != "tutorial" and choice != "play":
+        choice = input(Red_start + "Thats not an option, input again: " + Colour_end)
+        choice = choice.lower()
 
-movement()
+    if choice == "tutorial":
+        tutorial()
+    Game()
+
+main_menu()
 # when milestone reached:
-# git stage*
+# git stage *
 # git commit -m "blahblahlal"
 # git push
